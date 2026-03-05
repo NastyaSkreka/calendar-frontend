@@ -1,8 +1,9 @@
+import { Calendar } from "./components/Calendar/Calendar"
 
 function App() {
 
   return (
-   <></>
+   <Calendar/>
   )
 }
 
