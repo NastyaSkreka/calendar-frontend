@@ -1,20 +1,26 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { ICreateTask, IUpdateTask } from '../../types/task'
-import { tasksService } from '../services/tasks.service'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import type { ICreateTask, IUpdateTask } from '../../types/task';
+import { getCurrentMonthRange } from '../../utils/date';
+import { tasksService } from '../services/tasks.service';
 
 const queryKeys = {
 	tasks: 'tasks',
 }
 
-export function useTasks(params?: {
-	from?: string
-	to?: string
-	search?: string
-}) {
-	return useQuery({
-		queryKey: [queryKeys.tasks, params],
-		queryFn: () => tasksService.getTasks(params),
-	})
+export function useTasks(params?: { from?: string; to?: string; search?: string }) {
+  const defaultRange = getCurrentMonthRange();
+
+  const finalParams = {
+    from: params?.from ?? defaultRange.from,
+    to: params?.to ?? defaultRange.to,
+    search: params?.search,
+  };
+
+  return useQuery({
+    queryKey: [queryKeys.tasks, finalParams],
+    queryFn: () => tasksService.getTasks(finalParams),
+  });
 }
 
 export function useCreateTask() {
@@ -73,4 +79,16 @@ export function useReorderTasks() {
 			})
 		},
 	})
+}
+
+export function useReassignTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, newDay }: { id: string; newDay: string }) =>
+      tasksService.update(id, { day: newDay }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [queryKeys.tasks] });
+    },
+  });
 }
