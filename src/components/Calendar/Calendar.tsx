@@ -12,14 +12,14 @@ export const Calendar = () => {
 
   const { data: tasks = [] } = useTasks({ search: debouncedSearch });
   
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
 
   const monthName = now.toLocaleString('en-US', { month: 'long' });
   const year = now.getFullYear();
 
-  const days = useMemo(
-    () => getCalendarDays(now.getFullYear(), now.getMonth()),
-    [now]
+ const days = useMemo(
+    () => getCalendarDays(year, now.getMonth()),
+    [year, now]
   );
 
   return (
