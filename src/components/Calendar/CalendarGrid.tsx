@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { ITask } from "../../types/task";
+import { formatDay } from "../../utils/date";
 import { Grid } from "./calendar.styles";
 import { CalendarCell } from "./CalendarCell";
 
@@ -25,14 +26,9 @@ export const CalendarGrid = ({ days, tasks }: CalendarGridProps) => {
 
   return (
     <Grid>
-      {days.map((day) => {
-        const key = day ? day.toISOString() : Math.random();
-
-        const dayStr =
-          day &&
-          `${day.getFullYear()}-${(day.getMonth() + 1)
-            .toString()
-            .padStart(2, "0")}-${day.getDate().toString().padStart(2, "0")}`;
+      {days.map((day, index) => {
+        const key = day ? day.toISOString() : `empty-${index}`;
+        const dayStr = day ? formatDay(day) : '';
 
         return (
           <CalendarCell
