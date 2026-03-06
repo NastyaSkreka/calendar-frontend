@@ -1,12 +1,15 @@
-import { useState } from 'react'
-import {
-	useCreateTask,
-	useReassignTask,
-	useUpdateTask,
-} from '../../api/hooks/tasks.query'
 import type { ITask } from '../../types/task'
 import { formatDay } from '../../utils/date'
-import { AddButton, AddTaskWrapper, Cell, DayLabel, EditInput, TaskCard, TaskInput } from './calendar.styles'
+import {
+	AddButton,
+	AddTaskWrapper,
+	Cell,
+	DayLabel,
+	TaskInput
+} from './calendar.styles'
+import { useTaskActions } from './hooks/useTaskActions'
+import { useTaskDnD } from './hooks/useTaskDnD'
+import { TaskItem } from './TaskItem'
 
 interface CalendarCellProps {
 	date: Date | null
@@ -14,95 +17,41 @@ interface CalendarCellProps {
 }
 
 export const CalendarCell = ({ date, tasks }: CalendarCellProps) => {
-	if (!date) return <Cell />
+  if (!date) return <Cell />;
 
-	const dayStr = formatDay(date)
+  const dayStr = formatDay(date);
 
-	const [newTaskTitle, setNewTaskTitle] = useState('')
-	const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
-	const [editingTitle, setEditingTitle] = useState('')
+  const { handleMove } = useTaskDnD(tasks, dayStr);
+  const { newTaskTitle, setNewTaskTitle, handleAddTask, updateTask } = useTaskActions(dayStr);
 
-	const createTaskMutation = useCreateTask()
-	const updateTaskMutation = useUpdateTask()
-	const reassignTaskMutation = useReassignTask()
+  const onDropOnCell = (e: React.DragEvent) => {
+    const dragId = e.dataTransfer.getData('taskId');
+    const sourceDay = e.dataTransfer.getData('taskDay');
+    handleMove(dragId, sourceDay);
+  };
 
-	const handleAddTask = () => {
-		const title = newTaskTitle.trim()
-		if (!title) return
+  return (
+    <Cell onDragOver={(e) => e.preventDefault()} onDrop={onDropOnCell}>
+      <DayLabel>{date.getDate()}</DayLabel>
 
-		createTaskMutation.mutate({ title, day: dayStr })
-		setNewTaskTitle('')
-	}
+      <AddTaskWrapper>
+        <TaskInput
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
+          placeholder="New task..."
+        />
+        <AddButton onClick={handleAddTask}>+</AddButton>
+      </AddTaskWrapper>
 
-	const handleSaveEdit = (taskId: string) => {
-		const title = editingTitle.trim()
-		if (!title) return
-
-		updateTaskMutation.mutate({
-			id: taskId,
-			dto: { title },
-		})
-
-		setEditingTaskId(null)
-		setEditingTitle('')
-	}
-
-	const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-		const taskId = e.dataTransfer.getData('taskId')
-		const taskDay = e.dataTransfer.getData('taskDay')
-
-		if (!taskId) return
-
-		if (taskDay !== dayStr) {
-			reassignTaskMutation.mutate({
-				id: taskId,
-				newDay: dayStr,
-			})
-		}
-	}
-
-	return (
-		<Cell onDragOver={e => e.preventDefault()} onDrop={handleDrop}>
-			<DayLabel>{date.getDate()}</DayLabel>
-
-			<AddTaskWrapper>
-				<TaskInput
-					value={newTaskTitle}
-					onChange={e => setNewTaskTitle(e.target.value)}
-					onKeyDown={e => e.key === 'Enter' && handleAddTask()}
-					placeholder='New task...'
-				/>
-				<AddButton onClick={handleAddTask}>+</AddButton>
-			</AddTaskWrapper>
-
-			{tasks.map(task =>
-				editingTaskId === task.id ? (
-					<div key={task.id}>
-						<EditInput
-							value={editingTitle}
-							onChange={e => setEditingTitle(e.target.value)}
-							onBlur={() => handleSaveEdit(task.id)}
-							onKeyDown={e => e.key === 'Enter' && handleSaveEdit(task.id)}
-							autoFocus
-						/>
-					</div>
-				) : (
-					<TaskCard
-						key={task.id}
-						draggable
-						onDragStart={e => {
-							e.dataTransfer.setData('taskId', task.id)
-							e.dataTransfer.setData('taskDay', task.day)
-						}}
-						onDoubleClick={() => {
-							setEditingTaskId(task.id)
-							setEditingTitle(task.title)
-						}}
-					>
-						{task.title}
-					</TaskCard>
-				),
-			)}
-		</Cell>
-	)
-}
+      {tasks.map((task) => (
+        <TaskItem 
+          key={task.id} 
+          task={task} 
+          onMove={handleMove} 
+          onUpdate={updateTask} 
+        />
+      ))}
+    </Cell>
+  );
+};

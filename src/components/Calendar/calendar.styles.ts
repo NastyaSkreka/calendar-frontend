@@ -115,6 +115,7 @@ export const TaskCard = styled.div`
 
   &:active {
     cursor: grabbing;
+    opacity: 0.7;
   }
 `;
 
