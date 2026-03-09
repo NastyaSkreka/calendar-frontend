@@ -3,10 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ICreateTask, IUpdateTask } from '../../types/task';
 import { getCurrentMonthRange } from '../../utils/date';
 import { tasksService } from '../services/tasks.service';
+import { queryKeys } from './config/query-keys';
 
-const queryKeys = {
-	tasks: 'tasks',
-}
 
 export function useTasks(params?: { from?: string; to?: string; search?: string }) {
   const defaultRange = getCurrentMonthRange();

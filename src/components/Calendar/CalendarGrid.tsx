@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { IHoliday } from "../../types/holiday";
 import type { ITask } from "../../types/task";
 import { formatDay } from "../../utils/date";
 import { Grid } from "./calendar.styles";
@@ -7,9 +8,17 @@ import { CalendarCell } from "./CalendarCell";
 interface CalendarGridProps {
   days: (Date | null)[];
   tasks: ITask[];
+  holidays: IHoliday[]
 }
 
-export const CalendarGrid = ({ days, tasks }: CalendarGridProps) => {
+export const CalendarGrid = ({ days, tasks, holidays }: CalendarGridProps) => {
+
+  const holidaysByDay = useMemo(() => {
+    const map: Record<string, IHoliday> = {};
+    holidays.forEach(h => { map[h.date] = h; });
+    return map;
+  }, [holidays]);
+
 
   const tasksByDay = useMemo(() => {
     const map: Record<string, ITask[]> = {};
@@ -24,6 +33,7 @@ export const CalendarGrid = ({ days, tasks }: CalendarGridProps) => {
     return map;
   }, [tasks]);
 
+
   return (
     <Grid>
       {days.map((day, index) => {
@@ -35,6 +45,7 @@ export const CalendarGrid = ({ days, tasks }: CalendarGridProps) => {
             key={key}
             date={day}
             tasks={dayStr ? tasksByDay[dayStr] ?? [] : []}
+            holiday={holidaysByDay[dayStr]}
           />
         );
       })}

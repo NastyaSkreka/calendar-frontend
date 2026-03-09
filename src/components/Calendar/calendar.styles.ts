@@ -208,3 +208,51 @@ export const StyledInput = styled.input`
 		color: #999;
 	}
 `
+
+export const HolidayLabel = styled.div`
+  font-size: 11px;
+  font-weight: 700;
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  pointer-events: none; 
+  user-select: none;
+`;
+
+export const NavButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e2e2e7;
+  background: white;
+  color: #1c1c1e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+
+  &:hover {
+    background: #f2f2f7;
+    border-color: #d1d1d6;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    background: #e5e5ea;
+  }
+`;
+
+export const DateNavigation = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
